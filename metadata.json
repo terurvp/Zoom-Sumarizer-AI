@@ -1,0 +1,5 @@
+{
+  "name": "Zoom Summarizer AI",
+  "description": "A tool to generate intelligent text summaries from Zoom audio and video recordings using Google Gemini.",
+  "requestFramePermissions": []
+}

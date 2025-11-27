@@ -11,7 +11,7 @@ interface UploadSectionProps {
 const UploadSection: React.FC<UploadSectionProps> = ({ onFileSelected, loadingState, error }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [language, setLanguage] = useState<SummaryLanguage>('auto');
+  const [language, setLanguage] = useState<SummaryLanguage>('ja');
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -67,29 +67,23 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onFileSelected, loadingSt
 
       {/* Language Selector */}
       <div className="mb-6 flex flex-col items-center">
-        <label className="text-sm text-gray-600 mb-2 font-medium">Summary Language / 要約の言語</label>
+        <label className="text-sm text-gray-600 mb-2 font-medium flex items-center gap-1">
+          <Globe className="w-4 h-4" />
+          Summary Language / 要約の言語
+        </label>
         <div className="bg-gray-100 p-1 rounded-lg flex gap-1 border border-gray-200">
           <button
-            onClick={() => setLanguage('auto')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${
-              language === 'auto' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <Globe className="w-4 h-4" />
-            Auto
-          </button>
-          <button
             onClick={() => setLanguage('ja')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-              language === 'ja' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            className={`px-8 py-1.5 text-sm font-medium rounded-md transition-all ${
+              language === 'ja' ? 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5' : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             日本語 (Japanese)
           </button>
           <button
             onClick={() => setLanguage('en')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-              language === 'en' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            className={`px-8 py-1.5 text-sm font-medium rounded-md transition-all ${
+              language === 'en' ? 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5' : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             English

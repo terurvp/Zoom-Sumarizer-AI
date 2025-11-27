@@ -1,10 +1,9 @@
 import React, { useRef, useState } from 'react';
-import { UploadCloud, FileAudio, AlertCircle, Loader2 } from 'lucide-react';
-import { formatBytes } from '../utils/fileHelper';
-import { LoadingState } from '../types';
+import { UploadCloud, AlertCircle, Loader2, Globe, AlertTriangle } from 'lucide-react';
+import { LoadingState, SummaryLanguage } from '../types';
 
 interface UploadSectionProps {
-  onFileSelected: (file: File) => void;
+  onFileSelected: (file: File, language: SummaryLanguage) => void;
   loadingState: LoadingState;
   error: string | null;
 }
@@ -12,6 +11,7 @@ interface UploadSectionProps {
 const UploadSection: React.FC<UploadSectionProps> = ({ onFileSelected, loadingState, error }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [language, setLanguage] = useState<SummaryLanguage>('auto');
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -45,10 +45,10 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onFileSelected, loadingSt
     ];
     
     // Note: Checking specific mime types can be tricky across browsers, 
-    // so we also check extensions as a fallback if needed, but strict type check is safer.
+    // so we also check extensions as a fallback if needed.
     
     if (validTypes.includes(file.type) || file.name.match(/\.(mp3|wav|m4a|mp4|mov|webm)$/i)) {
-      onFileSelected(file);
+      onFileSelected(file, language);
     } else {
       alert("Unsupported file format. Please upload an audio (MP3, WAV, M4A) or video (MP4, MOV) file.");
     }
@@ -63,6 +63,38 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onFileSelected, loadingSt
         <p className="text-gray-500">
           Upload your Zoom local recording or downloaded cloud recording.
         </p>
+      </div>
+
+      {/* Language Selector */}
+      <div className="mb-6 flex flex-col items-center">
+        <label className="text-sm text-gray-600 mb-2 font-medium">Summary Language / 要約の言語</label>
+        <div className="bg-gray-100 p-1 rounded-lg flex gap-1 border border-gray-200">
+          <button
+            onClick={() => setLanguage('auto')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-2 ${
+              language === 'auto' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            <Globe className="w-4 h-4" />
+            Auto
+          </button>
+          <button
+            onClick={() => setLanguage('ja')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+              language === 'ja' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            日本語 (Japanese)
+          </button>
+          <button
+            onClick={() => setLanguage('en')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+              language === 'en' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            English
+          </button>
+        </div>
       </div>
 
       <div
@@ -104,7 +136,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onFileSelected, loadingSt
               Click to upload or drag and drop
             </p>
             <p className="text-sm text-gray-500 mt-1">
-              MP3, M4A, MP4, MOV (Max 20MB recommended)
+              MP3, M4A, MP4, MOV (Max 5GB)
             </p>
           </div>
         )}
@@ -113,18 +145,24 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onFileSelected, loadingSt
       {error && (
         <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-lg flex items-start gap-3">
           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-          <p className="text-sm">{error}</p>
+          <p className="text-sm whitespace-pre-line">{error}</p>
         </div>
       )}
       
-      <div className="mt-6 flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
+      {/* Warning regarding Browser Limits for Large Files */}
+      <div className="mt-6 flex items-start gap-3 p-4 bg-amber-50 rounded-lg border border-amber-100">
         <div className="flex-shrink-0">
-          <AlertCircle className="w-5 h-5 text-blue-600" />
+          <AlertTriangle className="w-5 h-5 text-amber-600" />
         </div>
         <div>
-          <h4 className="text-sm font-medium text-blue-900">Why upload a file instead of a URL?</h4>
-          <p className="text-sm text-blue-700 mt-1">
-            Zoom recordings are protected by privacy settings and cannot be accessed directly by third-party web apps without complex authentication. For your security, please download the recording from Zoom and upload the file here.
+          <h4 className="text-sm font-medium text-amber-900">Important: Large File Warning / ファイルサイズに関する注意</h4>
+          <p className="text-sm text-amber-800 mt-1">
+            We accept files up to 5GB. However, due to browser memory limits, <b>processing files larger than 500MB may cause the browser to freeze or crash</b>.
+            <br className="mb-1"/>
+            5GBまでのファイルを受け付けていますが、ブラウザのメモリ制限により、500MBを超えるファイルは処理中にブラウザが停止する可能性があります。
+          </p>
+          <p className="text-xs text-amber-700 mt-2 font-medium">
+            Tip: For long meetings, converting video to audio-only (MP3/M4A) significantly reduces file size.
           </p>
         </div>
       </div>

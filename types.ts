@@ -6,6 +6,8 @@ export enum LoadingState {
   ERROR = 'ERROR',
 }
 
+export type SummaryLanguage = 'auto' | 'ja' | 'en';
+
 export interface SummaryResult {
   summary: string;
   timestamp: string;

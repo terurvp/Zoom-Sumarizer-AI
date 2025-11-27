@@ -4,7 +4,7 @@ import UploadSection from './components/UploadSection';
 import SummaryResult from './components/SummaryResult';
 import { fileToBase64 } from './utils/fileHelper';
 import { generateZoomSummary } from './services/geminiService';
-import { LoadingState, FileData } from './types';
+import { LoadingState, FileData, SummaryLanguage } from './types';
 
 const App: React.FC = () => {
   const [loadingState, setLoadingState] = useState<LoadingState>(LoadingState.IDLE);
@@ -12,14 +12,14 @@ const App: React.FC = () => {
   const [summary, setSummary] = useState<string | null>(null);
   const [currentFile, setCurrentFile] = useState<FileData | null>(null);
 
-  const handleFileSelected = async (file: File) => {
+  const handleFileSelected = async (file: File, language: SummaryLanguage) => {
     setError(null);
     setSummary(null);
     
-    // Size check: Client side limit recommendation for browser performance (Base64 overhead)
-    // 50MB is generous but manageable for modern browsers.
-    if (file.size > 50 * 1024 * 1024) {
-      setError("File is too large (max 50MB recommended for browser-based processing). Please trim the recording or use a smaller format.");
+    // Size check: Increased to 5GB as requested.
+    // Note: Browser processing of multi-GB files into Base64 for inlineData may be memory intensive.
+    if (file.size > 5 * 1024 * 1024 * 1024) {
+      setError("File is too large (max 5GB). Please trim the recording.");
       return;
     }
 
@@ -36,7 +36,7 @@ const App: React.FC = () => {
       });
 
       setLoadingState(LoadingState.GENERATING);
-      const generatedSummary = await generateZoomSummary(base64, file.type);
+      const generatedSummary = await generateZoomSummary(base64, file.type, language);
       
       setSummary(generatedSummary);
       setLoadingState(LoadingState.SUCCESS);
@@ -44,7 +44,14 @@ const App: React.FC = () => {
     } catch (err: any) {
       console.error(err);
       setLoadingState(LoadingState.ERROR);
-      setError(err.message || "An unexpected error occurred while processing the file.");
+      let errorMessage = err.message || "An unexpected error occurred while processing the file.";
+      
+      // Add helpful context for memory/size issues
+      if (err.name === 'RangeError' || err.message.includes('memory') || err.message.includes('large')) {
+         errorMessage = "The file is too large for the browser to process. Please try a smaller file (under 500MB is recommended for browser-based AI).";
+      }
+      
+      setError(errorMessage);
     }
   };
 
@@ -66,7 +73,7 @@ const App: React.FC = () => {
             <span className="text-blue-600 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Actionable Summaries</span>
           </h1>
           <p className="text-lg text-gray-600">
-            Upload your audio or video file. Our AI listens to the meeting, extracts key points, and drafts a professional summary in seconds.
+            Upload your audio or video file. Our AI listens to the meeting, extracts key points, and drafts a professional summary in your preferred language.
           </p>
         </div>
 
